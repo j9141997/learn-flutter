@@ -29,27 +29,97 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TodoListPage extends StatelessWidget {
+class TodoListPage extends StatefulWidget {
   const TodoListPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold();
-  }
+  _TodoListPageState createState() => _TodoListPageState();
 }
 
-class TodoAddPage extends StatelessWidget {
-  const TodoAddPage({Key? key}) : super(key: key);
+class _TodoListPageState extends State<TodoListPage> {
+  List<String> todoList = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Center(
-            child: TextButton(
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-      child: const Text('リスト追加画面(タップで戻る)'),
-    )));
+      appBar: AppBar(
+        title: const Text('リスト一覧'),
+      ),
+      body: ListView.builder(
+          itemCount: todoList.length,
+          itemBuilder: (context, index) {
+            return Card(
+              child: ListTile(title: Text(todoList[index])),
+            );
+          }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final newListText = await Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) {
+              // 遷移先の画面としてリスト追加画面を指定
+              return const TodoAddPage();
+            }),
+          );
+          if (newListText != null) {
+            // キャンセルした場合は newListText が null となるので注意
+            setState(() {
+              // リスト追加
+              todoList.add(newListText.toString());
+            });
+          }
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class TodoAddPage extends StatefulWidget {
+  const TodoAddPage({Key? key}) : super(key: key);
+
+  @override
+  _TodoAddPageState createState() => _TodoAddPageState();
+}
+
+class _TodoAddPageState extends State<TodoAddPage> {
+  String _text = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: const Text('リスト追加')),
+        body: Container(
+            padding: const EdgeInsets.all(64),
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              TextField(
+                onChanged: (String value) {
+                  setState(() {
+                    _text = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(_text);
+                  },
+                  child: const Text('リスト追加',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('キャンセル'),
+                ),
+              )
+            ])));
   }
 }
